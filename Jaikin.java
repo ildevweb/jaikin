@@ -57,27 +57,43 @@ public class Jaikin extends JPanel implements MouseListener, KeyListener {
         return copy;
     }
 
-    void buildLines(List<Circle> points) {
+    void buildLines(List<Circle> circles) {
         lines.clear();
-        for (int i = 0; i < points.size() - 1; i++) {
-            Circle a = points.get(i);
-            Circle b = points.get(i + 1);
+        for (int i = 0; i < circles.size() - 1; i++) {
+            Circle a = circles.get(i);
+            Circle b = circles.get(i + 1);
             lines.add(new Line2D.Float(a.x, a.y, b.x, b.y));
         }
     }
 
-    List<Circle> chaikinStep(List<Circle> input) {
-        List<Circle> output = new ArrayList<>();
-        for (int i = 0; i < input.size() - 1; i++) {
-            Circle p0 = input.get(i);
-            Circle p1 = input.get(i + 1);
-            Circle q = new Circle(0.75f * p0.x + 0.25f * p1.x, 0.75f * p0.y + 0.25f * p1.y, 4f);
-            Circle r = new Circle(0.25f * p0.x + 0.75f * p1.x, 0.25f * p0.y + 0.75f * p1.y, 4f);
-            output.add(q);
-            output.add(r);
+    List<Circle> chaikinStep(List<Circle> circles) {
+        List<Circle> newCircles = new ArrayList<>();
+
+        for (int i = 0; i < circles.size(); i++) {
+            Circle c = circles.get(i);
+
+            // Always keep last point
+            if (i == circles.size() - 1) {
+                newCircles.add(c.cloneCircle());
+                break;
+            }
+
+            // Calculate new points between c and next
+            Circle q = Circle.interpolate(c, circles.get(i + 1), 0.25f);
+            Circle r = Circle.interpolate(c, circles.get(i + 1), 0.75f);
+
+            // Keep first point
+            if (i == 0) {
+                newCircles.add(c.cloneCircle());
+            }
+
+            newCircles.add(q);
+            newCircles.add(r);
         }
-        return output;
+
+        return newCircles;
     }
+
 
     @Override
     protected void paintComponent(Graphics g) {
