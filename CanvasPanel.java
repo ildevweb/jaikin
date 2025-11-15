@@ -1,38 +1,33 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
-import tools.*;
+import java.awt.event.*;
 import java.awt.geom.Line2D;
 
-public class Jaikin extends JPanel implements MouseListener, KeyListener {
+public class CanvasPanel extends JPanel implements MouseListener, KeyListener {
     List<Circle> circles = new ArrayList<>();
+    List<Line2D.Float> lines = new ArrayList<>();
     List<Circle> originalCircles = new ArrayList<>();
     List<Circle> ogCircles = new ArrayList<>();
-    List<Line2D.Float> lines = new ArrayList<>();
-
-    boolean stepMode = false;
     boolean started = false;
+    boolean stepMode = false;
     int currentStep = 0;
     final int maxSteps = 7;
-
     long lastStepTime = 0;
+    
 
-    public Jaikin() {
-        setBackground(Color.BLACK);
+    public CanvasPanel() {
+        setBackground(Color.WHITE);
         setFocusable(true);
-        requestFocusInWindow();
         addMouseListener(this);
         addKeyListener(this);
 
-        // Timer to mimic game loop (~60 FPS)
-        Timer timer = new Timer(16, e -> update());
+        Timer timer = new Timer(16, e -> update()); // ~60fps
         timer.start();
     }
 
     void update() {
-        // Step through Chaikin algorithm every 600ms
         if (stepMode) {
             long now = System.currentTimeMillis();
             if (now - lastStepTime >= 600) {
@@ -95,27 +90,47 @@ public class Jaikin extends JPanel implements MouseListener, KeyListener {
     }
 
 
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        // --- INFO TEXT ---
+        g.setColor(Color.BLACK);
+        g.setFont(new Font("Arial", Font.PLAIN, 16));
+
+        int y = 20;
+        g.drawString("Left click: add point", 10, y);
+        y += 20;
+        g.drawString("Enter: start Chaikin animation", 10, y);
+        y += 20;
+        g.drawString("Escape: exit program", 10, y);
+        y += 20;
+        g.drawString(String.format("Steps: %d", currentStep), 10, y);
+
+        // Draw current circles
+        g2.setColor(Color.BLUE);
+        for (Circle c : circles) {
+            g2.fillOval(
+                (int) (c.x - c.r / 2),
+                (int) (c.y - c.r / 2),
+                (int) c.r,
+                (int) c.r
+            );
+        }
 
         // Draw lines
-        g2.setColor(Color.WHITE);
+        g2.setColor(Color.BLUE);
         for (Line2D.Float line : lines) {
             g2.draw(line);
         }
 
         // Draw original circles
-        g2.setColor(Color.WHITE);
+        g2.setColor(Color.BLUE);
         for (Circle c : ogCircles) {
             g2.fillOval((int) (c.x - 2), (int) (c.y - 2), 4, 4);
-        }
-
-        // Draw current circles
-        g2.setColor(Color.RED);
-        for (Circle c : circles) {
-            g2.fillOval((int) (c.x - c.r / 2), (int) (c.y - c.r / 2), (int) c.r, (int) c.r);
         }
     }
 
@@ -130,6 +145,7 @@ public class Jaikin extends JPanel implements MouseListener, KeyListener {
     @Override public void mouseReleased(MouseEvent e) {}
     @Override public void mouseEntered(MouseEvent e) {}
     @Override public void mouseExited(MouseEvent e) {}
+
 
     // KeyListener
     @Override
@@ -159,14 +175,4 @@ public class Jaikin extends JPanel implements MouseListener, KeyListener {
     }
     @Override public void keyReleased(KeyEvent e) {}
     @Override public void keyTyped(KeyEvent e) {}
-
-    public static void main(String[] args) {
-        JFrame frame = new JFrame("Jaikin");
-        Jaikin panel = new Jaikin();
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(500, 500);
-        frame.add(panel);
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
-    }
 }

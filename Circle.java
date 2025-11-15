@@ -1,5 +1,3 @@
-package tools;
-
 public class Circle {
     public float x, y, r;
 
@@ -19,4 +17,5 @@ public class Circle {
         float y = a.y * (1 - t) + b.y * t;
         return new Circle(x, y, 1f);
     }
+
 }
